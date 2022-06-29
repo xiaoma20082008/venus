@@ -42,17 +42,17 @@ public abstract sealed class FilterBase<M> implements Filter<M> permits FilterIn
     }
 
     @Override
-    public Filter<M> next() {
+    public final Filter<M> getNext() {
         return this.next;
     }
 
     @Override
-    public void next(Filter<M> next) {
+    public final void setNext(Filter<M> next) {
         this.next = next;
     }
 
     @Override
-    public boolean need(M msg) {
+    public boolean shouldFilter(M msg) {
         return true;
     }
 

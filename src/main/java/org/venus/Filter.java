@@ -8,11 +8,11 @@ public sealed interface Filter<M> extends Comparable<Filter<M>> permits FilterBa
 
     M filter(M msg);
 
-    Filter<M> next();
+    Filter<M> getNext();
 
-    void next(Filter<M> next);
+    void setNext(Filter<M> next);
 
-    boolean need(M msg);
+    boolean shouldFilter(M msg);
 
     String name();
 
