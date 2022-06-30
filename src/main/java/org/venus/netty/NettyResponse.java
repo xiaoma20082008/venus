@@ -47,4 +47,9 @@ public class NettyResponse implements Response {
     public String content() {
         return null;
     }
+
+    public FullHttpResponse getTargetResponse() {
+        return this.response;
+    }
+
 }

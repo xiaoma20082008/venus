@@ -33,7 +33,6 @@ public class NettyRequestReceiver extends ChannelInboundHandlerAdapter {
             // 请求行+请求头
             if (req.content().readableBytes() > 0) {
                 doService(ctx, req);
-                LOGGER.info("## uri={},channel={}", req.uri(), ctx.channel());
             } else {
                 ReferenceCountUtil.release(msg);
             }
@@ -74,6 +73,8 @@ public class NettyRequestReceiver extends ChannelInboundHandlerAdapter {
                 ctx.fireExceptionCaught(error);
             }
         } finally {
+            int rc = request.refCnt();
+            int sc = response.refCnt();
             ReferenceCountUtil.release(request);    // ref--
             ReferenceCountUtil.release(response);   // ref--
 
@@ -81,11 +82,11 @@ public class NettyRequestReceiver extends ChannelInboundHandlerAdapter {
             long m = PlatformDependent.maxDirectMemory();
 
             if (error == null) {
-                LOGGER.info("## write response success. total cost {}ms, process cost {}ms, write response cost {}ms. Direct memory: use/now/max = {}/{}/{} bytes.",
-                        System.currentTimeMillis() - start, (end - start), (System.currentTimeMillis() - end), u, n, m);
+                LOGGER.info("## write response success. total cost {}ms, process cost {}ms, write response cost {}ms. Direct memory: use/now/max = {}/{}/{} bytes. rc={},sc={}",
+                        System.currentTimeMillis() - start, (end - start), (System.currentTimeMillis() - end), u, n, m, rc, sc);
             } else {
-                LOGGER.info("## write response failed. total cost {}ms, process cost {}ms, write response cost {}ms. Direct memory: use/now/max = {}/{}/{} bytes. caused by:{}",
-                        System.currentTimeMillis() - start, (end - start), (System.currentTimeMillis() - end), u, n, m, error);
+                LOGGER.info("## write response failed. total cost {}ms, process cost {}ms, write response cost {}ms. Direct memory: use/now/max = {}/{}/{} bytes. rc={},sc={} caused by:{}",
+                        System.currentTimeMillis() - start, (end - start), (System.currentTimeMillis() - end), u, n, m, rc, sc, error);
             }
         }
     }

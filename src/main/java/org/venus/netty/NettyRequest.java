@@ -72,4 +72,9 @@ public class NettyRequest implements Request {
     public String content() {
         return null;
     }
+
+    public FullHttpRequest getSourceRequest() {
+        return request;
+    }
+
 }
