@@ -1,5 +1,7 @@
 package org.venus;
 
+import java.util.concurrent.CompletableFuture;
+
 public sealed interface Filter<M> extends Comparable<Filter<M>> permits FilterBase {
 
     int MIN_ORDER = 1;
@@ -7,6 +9,8 @@ public sealed interface Filter<M> extends Comparable<Filter<M>> permits FilterBa
     int MAX_ORDER = 10;
 
     M filter(M msg);
+
+    CompletableFuture<M> filterAsync(CompletableFuture<M> future);
 
     Filter<M> next();
 

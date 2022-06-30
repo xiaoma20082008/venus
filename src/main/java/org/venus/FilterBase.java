@@ -1,6 +1,7 @@
 package org.venus;
 
 import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
 
 import static java.util.Objects.requireNonNull;
 
@@ -57,6 +58,19 @@ public abstract sealed class FilterBase<M> implements Filter<M> permits FilterIn
     @Override
     public boolean shouldFilter(M msg) {
         return true;
+    }
+
+    @Override
+    public CompletableFuture<M> filterAsync(CompletableFuture<M> future) {
+        CompletableFuture<M> f = new CompletableFuture<>();
+        future.whenComplete((msg, err) -> {
+            if (err != null) {
+                f.completeExceptionally(err);
+            } else {
+                f.complete(filter(msg));
+            }
+        });
+        return f;
     }
 
     @Override
