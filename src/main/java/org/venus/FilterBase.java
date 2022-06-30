@@ -1,5 +1,7 @@
 package org.venus;
 
+import java.util.Objects;
+
 import static java.util.Objects.requireNonNull;
 
 public abstract sealed class FilterBase<M> implements Filter<M> permits FilterInbound, FilterOutbound {
@@ -42,13 +44,14 @@ public abstract sealed class FilterBase<M> implements Filter<M> permits FilterIn
     }
 
     @Override
-    public final Filter<M> getNext() {
+    public final Filter<M> next() {
         return this.next;
     }
 
     @Override
-    public final void setNext(Filter<M> next) {
-        this.next = next;
+    public final Filter<M> next(Filter<M> next) {
+        this.next = Objects.requireNonNull(next, "next is null");
+        return this;
     }
 
     @Override

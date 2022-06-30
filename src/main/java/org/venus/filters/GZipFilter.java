@@ -7,6 +7,6 @@ public final class GZipFilter extends FilterOutbound {
 
     @Override
     public Response filter(Response msg) {
-        return null;
+        return next().filter(msg);
     }
 }

@@ -8,9 +8,9 @@ public sealed interface Filter<M> extends Comparable<Filter<M>> permits FilterBa
 
     M filter(M msg);
 
-    Filter<M> getNext();
+    Filter<M> next();
 
-    void setNext(Filter<M> next);
+    Filter<M> next(Filter<M> next);
 
     boolean shouldFilter(M msg);
 

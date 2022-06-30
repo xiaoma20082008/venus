@@ -7,7 +7,7 @@ public final class SignFilter extends FilterInbound {
 
     @Override
     public Request filter(Request msg) {
-        return null;
+        return next().filter(msg);
     }
 
 }
