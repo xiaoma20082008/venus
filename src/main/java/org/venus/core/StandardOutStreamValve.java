@@ -4,8 +4,8 @@ import org.venus.Container;
 import org.venus.FilterOutbound;
 import org.venus.Request;
 import org.venus.Response;
-import org.venus.filters.GZipFilter;
-import org.venus.filters.MockRespFilter;
+import org.venus.filters.resp.GZipFilter;
+import org.venus.filters.resp.MockRespFilter;
 import org.venus.valves.ValveBase;
 
 import java.util.concurrent.CompletableFuture;
