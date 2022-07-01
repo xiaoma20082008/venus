@@ -148,7 +148,7 @@ public class NettyServerConnector extends LifecycleBase implements ServerConnect
                         channel.pipeline().addLast(acceptor, "manager", new NettyConnectionHandler(manager));
                         channel.pipeline().addLast(selector, "codec", new HttpServerCodec());
                         channel.pipeline().addLast(selector, "aggregator", new HttpObjectAggregator(config.getNetMaxBytes()));
-                        channel.pipeline().addLast(worker, "handler", new NettyRequestReceiver(adapter, worker));
+                        channel.pipeline().addLast(worker, "handler", new NettyRequestReceiver(adapter));
                     }
                 });
         this.future = server.bind().sync();

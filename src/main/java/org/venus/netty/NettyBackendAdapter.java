@@ -11,7 +11,7 @@ public class NettyBackendAdapter implements Adapter<Response, io.netty.handler.c
     @Override
     public CompletableFuture<io.netty.handler.codec.http.FullHttpResponse> service(Response resp, Object ext) {
         FullHttpResponse response;
-        if (resp instanceof NettyResponse nettyResponse) {
+        if (resp instanceof NettyHttpResponse nettyResponse) {
             response = nettyResponse.getTargetResponse();
         } else {
             response = new DefaultFullHttpResponse(

@@ -2,19 +2,26 @@ package org.venus.protocols;
 
 import org.venus.ClientConnector;
 import org.venus.Protocol;
+import org.venus.Request;
+import org.venus.Response;
 import org.venus.config.FixedPoolConfig;
 import org.venus.utils.AsyncObjectFactory;
-import org.venus.utils.FixedAsyncPool;
+import org.venus.utils.AsyncPool;
+import org.venus.utils.FixedCommonsPool;
 
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 
 public class PooledProtocol extends ProtocolBase {
-    private final FixedAsyncPool<ClientConnector> pool;
+    private final AsyncPool<ClientConnector> pool;
+
+    public PooledProtocol(Protocol protocol) {
+        this(protocol, new FixedPoolConfig());
+    }
 
     public PooledProtocol(Protocol protocol, FixedPoolConfig config) {
         super(getName(protocol));
-        this.pool = new FixedAsyncPool<>(new ClientConnectorFactory(protocol), Objects.requireNonNull(config, "PoolConfig is null"));
+        this.pool = new FixedCommonsPool<>(new ClientConnectorFactory(protocol), Objects.requireNonNull(config, "PoolConfig is null"));
     }
 
     private static String getName(Protocol protocol) {
@@ -25,12 +32,35 @@ public class PooledProtocol extends ProtocolBase {
 
     @Override
     protected ClientConnector doAcquire() throws Exception {
-        return this.pool.acquire();
+        ClientConnector client = new ClientConnectorProxy(this.pool.acquire());
+        client.start();
+        return client;
     }
 
-    @Override
-    protected void doRelease(ClientConnector client) throws Exception {
-        this.pool.release(client);
+    private class ClientConnectorProxy extends ClientConnectorBase {
+
+        private volatile ClientConnector client;
+
+        public ClientConnectorProxy(ClientConnector client) {
+            this.client = client;
+        }
+
+        @Override
+        public CompletableFuture<Response> invokeAsync(Request request) {
+            return this.client.invokeAsync(request);
+        }
+
+        @Override
+        public void start() throws Exception {
+            this.client.start();
+        }
+
+        @Override
+        public void close() throws Exception {
+            PooledProtocol.this.pool.release(this.client);
+            this.client = null;
+        }
+
     }
 
     private record ClientConnectorFactory(Protocol protocol) implements AsyncObjectFactory<ClientConnector> {

@@ -17,8 +17,6 @@ public class FixedAsyncPool<T extends AutoCloseable> extends AsyncPoolBase<T> {
     private static final int ST_CLOSING = 2;
     private static final int ST_CLOSED = 2;
 
-    private final AsyncObjectFactory<T> factory;
-    private final FixedPoolConfig config;
     private final Queue<T> cache;
     private final Queue<T> all;
     private final CompletableFuture<Void> closeFuture;
@@ -26,8 +24,7 @@ public class FixedAsyncPool<T extends AutoCloseable> extends AsyncPoolBase<T> {
     private volatile int state;
 
     public FixedAsyncPool(AsyncObjectFactory<T> factory, FixedPoolConfig config) {
-        this.factory = factory;
-        this.config = new FixedPoolConfig();
+        super(factory, config);
         this.cache = new ConcurrentLinkedQueue<>();
         this.all = new ConcurrentLinkedQueue<>();
         this.closeFuture = new CompletableFuture<>();

@@ -11,7 +11,7 @@ public class NettyFrontendAdapter implements Adapter<io.netty.handler.codec.http
     @Override
     public CompletableFuture<Request> service(io.netty.handler.codec.http.FullHttpRequest request, Object ext) {
         assert ext instanceof SessionContext;
-        return CompletableFuture.completedFuture(new NettyRequest(request, (SessionContext) ext));
+        return CompletableFuture.completedFuture(new NettyHttpRequest(request, (SessionContext) ext));
     }
 
 }

@@ -72,5 +72,6 @@ public class NettyConnectionManager {
 
     public void onFailed(ChannelHandlerContext ctx, Throwable t) {
         ctx.channel().close();
+        ctx.close();
     }
 }

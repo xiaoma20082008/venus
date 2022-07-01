@@ -6,6 +6,7 @@ import org.venus.Request;
 import org.venus.Response;
 import org.venus.filters.AuthFilter;
 import org.venus.filters.MockReqFilter;
+import org.venus.filters.RouteFilter;
 import org.venus.filters.SignFilter;
 import org.venus.valves.ValveBase;
 
@@ -31,6 +32,9 @@ public class StandardInStreamValve extends ValveBase {
     }
 
     private static FilterInbound buildInboundFilter() {
-        return (FilterInbound) new AuthFilter().next(new SignFilter().next(new MockReqFilter()));
+        return (FilterInbound) new AuthFilter()
+                .next(new SignFilter())
+                .next(new RouteFilter())
+                .next(new MockReqFilter());
     }
 }

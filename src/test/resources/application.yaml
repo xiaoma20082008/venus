@@ -1,0 +1,22 @@
+ServerConfig:
+  port: 4321
+  threadAcceptorNums: 1
+  threadSelectorNums: 4
+  threadCodecNums: 3
+  threadBusinessNums: 50
+  netMaxConnections: 1
+  netSoBacklog: 1000
+  netSoReuseaddr: true
+  netKeepalive: true
+  netNoDelay: true
+  netSoLinger: -1
+  netSndBuf: 65536
+  netRcvBuf: 65536
+  netSoTimeout: 1000
+  netConnectTimeout: 1000
+  netMaxBytes: 2097152 # 2MB
+  memMaxDirectSize: 1073741824 # 1GB
+
+ClientConfig:
+
+RouteConfig:

@@ -51,7 +51,12 @@ public abstract sealed class FilterBase<M> implements Filter<M> permits FilterIn
 
     @Override
     public final Filter<M> next(Filter<M> next) {
-        this.next = Objects.requireNonNull(next, "next is null");
+        Objects.requireNonNull(next, "next is null");
+        if (this.next == null) {
+            this.next = next;
+        } else {
+            this.next().next(next);
+        }
         return this;
     }
 

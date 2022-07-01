@@ -3,11 +3,9 @@ package org.venus.core;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufUtil;
 import io.netty.buffer.Unpooled;
-import io.netty.handler.codec.http.QueryStringDecoder;
-import org.venus.Request;
+import org.venus.HttpRequestBase;
 import org.venus.SessionContext;
 
-import java.io.Serializable;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
@@ -17,28 +15,21 @@ import java.util.Objects;
 
 import static java.util.Objects.requireNonNull;
 
-public final class HttpRequest implements Request, Serializable {
-
-    private static final long serialVersionUID = -8645635495081191668L;
+public final class StandardHttpRequest extends HttpRequestBase {
 
     private final String method;
     private final String uri;
     private final String version;
     private final Map<String, String> headers;
     private final ByteBuf body;
-    private final SessionContext context;
 
-    private transient String path;// for cache
-    private transient String content;// for cache
-    private transient Map<String, List<String>> parameters;// for cache
-
-    private HttpRequest(String m, String uri, String v, Map<String, String> headers, ByteBuf buf, SessionContext ctx) {
+    private StandardHttpRequest(String m, String uri, String v, Map<String, String> headers, ByteBuf buf, SessionContext ctx) {
+        super(ctx);
         this.method = m;
         this.uri = uri;
         this.version = v;
         this.headers = headers;
         this.body = buf;
-        this.context = ctx;
     }
 
     public static HttpRequestBuilder builder() {
@@ -53,26 +44,6 @@ public final class HttpRequest implements Request, Serializable {
     @Override
     public String uri() {
         return uri;
-    }
-
-    @Override
-    public String path() {
-        if (this.path == null) {
-            QueryStringDecoder decoder = new QueryStringDecoder(this.uri);
-            this.path = decoder.path();
-            this.parameters = decoder.parameters();
-        }
-        return this.path;
-    }
-
-    @Override
-    public Map<String, List<String>> parameters() {
-        if (this.parameters == null) {
-            QueryStringDecoder decoder = new QueryStringDecoder(this.uri);
-            this.path = decoder.path();
-            this.parameters = decoder.parameters();
-        }
-        return this.parameters;
     }
 
     @Override
@@ -91,35 +62,10 @@ public final class HttpRequest implements Request, Serializable {
     }
 
     @Override
-    public SessionContext context() {
-        return this.context;
-    }
-
-    @Override
-    public String content() {
-        if (this.content == null) {
-            byte[] bytes = new byte[this.body.readableBytes()];
-            this.body.getBytes(this.body.readerIndex(), bytes);
-            this.content = new String(bytes);
-        }
-        return this.content;
-    }
-
-    @Override
-    public Object getAttr(String key) {
-        return this.context.get(key);
-    }
-
-    @Override
-    public void putAttr(String key, Object attr) {
-        this.context.put(key, attr);
-    }
-
-    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        HttpRequest that = (HttpRequest) o;
+        StandardHttpRequest that = (StandardHttpRequest) o;
         return Objects.equals(method, that.method) && Objects.equals(uri, that.uri) && Objects.equals(version, that.version) && Objects.equals(headers, that.headers) && ByteBufUtil.equals(body, that.body);
     }
 
@@ -128,18 +74,6 @@ public final class HttpRequest implements Request, Serializable {
         int result = Objects.hash(method, uri, version, headers);
         result = 31 * result + ByteBufUtil.hashCode(body);
         return result;
-    }
-
-    @Override
-    public String toString() {
-        StringBuilder req = new StringBuilder();
-        req.append(method).append(' ');
-        req.append(uri).append(' ');
-        req.append(version).append("\r\n");
-        if (headers != null) {
-            headers.forEach((k, v) -> req.append(k).append(" : ").append(v).append("\r\n"));
-        }
-        return req.toString();
     }
 
     public static class HttpRequestBuilder {
@@ -214,8 +148,8 @@ public final class HttpRequest implements Request, Serializable {
             return this;
         }
 
-        public HttpRequest build() {
-            return new HttpRequest(
+        public StandardHttpRequest build() {
+            return new StandardHttpRequest(
                     requireNonNull(method, "method is null"),
                     requireNonNull(uri, "uri is null"),
                     requireNonNull(version, "version is null"),

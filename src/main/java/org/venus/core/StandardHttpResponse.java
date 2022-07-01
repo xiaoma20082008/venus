@@ -1,18 +1,15 @@
 package org.venus.core;
 
 import io.netty.buffer.*;
-import org.venus.Response;
+import org.venus.HttpResponseBase;
 
-import java.io.Serializable;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-public final class HttpResponse implements Response, Serializable {
-
-    private static final long serialVersionUID = -8746059598052924249L;
+public final class StandardHttpResponse extends HttpResponseBase {
 
     private final String protocol;
     private final int code;
@@ -20,9 +17,7 @@ public final class HttpResponse implements Response, Serializable {
     private final Map<String, String> headers;
     private final ByteBuf body;
 
-    private transient String content;// for cache
-
-    private HttpResponse(String protocol, int code, String reason, Map<String, String> headers, ByteBuf body) {
+    private StandardHttpResponse(String protocol, int code, String reason, Map<String, String> headers, ByteBuf body) {
         this.protocol = protocol;
         this.code = code;
         this.reason = reason;
@@ -60,20 +55,10 @@ public final class HttpResponse implements Response, Serializable {
     }
 
     @Override
-    public String content() {
-        if (this.content == null) {
-            byte[] bytes = new byte[this.body.readableBytes()];
-            this.body.getBytes(this.body.readerIndex(), bytes);
-            this.content = new String(bytes);
-        }
-        return this.content;
-    }
-
-    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        HttpResponse that = (HttpResponse) o;
+        StandardHttpResponse that = (StandardHttpResponse) o;
         return code == that.code && Objects.equals(protocol, that.protocol) && Objects.equals(reason, that.reason) && Objects.equals(headers, that.headers) && ByteBufUtil.equals(body, that.body);
     }
 
@@ -82,16 +67,6 @@ public final class HttpResponse implements Response, Serializable {
         int result = Objects.hash(protocol, code, reason, headers);
         result = 31 * result + ByteBufUtil.hashCode(body);
         return result;
-    }
-
-    @Override
-    public String toString() {
-        StringBuilder resp = new StringBuilder();
-        resp.append(protocol).append(' ').append(code).append(' ').append(reason).append("\r\n");
-        if (headers != null) {
-            headers.forEach((k, v) -> resp.append(k).append(" : ").append(v).append("\r\n"));
-        }
-        return resp.toString();
     }
 
     public static class HttpResponseBuilder {
@@ -150,9 +125,9 @@ public final class HttpResponse implements Response, Serializable {
             return this.body(Unpooled.wrappedBuffer(body));
         }
 
-        public HttpResponse build() {
+        public StandardHttpResponse build() {
             this.body = this.body == null ? new EmptyByteBuf(PooledByteBufAllocator.DEFAULT) : this.body;
-            return new HttpResponse(protocol, code, reason, headers, body);
+            return new StandardHttpResponse(protocol, code, reason, headers, body);
         }
     }
 }

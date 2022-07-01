@@ -8,7 +8,7 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpVersion;
 import org.venus.Request;
 import org.venus.Response;
-import org.venus.netty.NettyResponse;
+import org.venus.netty.NettyHttpResponse;
 import org.venus.protocols.ClientConnectorBase;
 
 import java.util.Arrays;
@@ -45,7 +45,7 @@ public class HttpClientConnector extends ClientConnectorBase {
         buf.retain(); // ref++
         response.headers().set(HttpHeaderNames.CONTENT_LENGTH, response.content().readableBytes());
         response.headers().set(HttpHeaderNames.CONTENT_TYPE, "text/html;charset=utf-8");
-        return new NettyResponse(response);
+        return new NettyHttpResponse(response);
     }
 
     private byte[] gen1_5kBytes() {

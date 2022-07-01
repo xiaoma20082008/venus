@@ -1,5 +1,6 @@
 package org.venus;
 
-public interface Chooser {
+public sealed interface Chooser permits ChooserBase {
+
     Protocol choose(Request request);
 }

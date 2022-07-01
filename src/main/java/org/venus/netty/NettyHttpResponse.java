@@ -2,16 +2,16 @@ package org.venus.netty;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.http.FullHttpResponse;
-import org.venus.Response;
+import org.venus.HttpResponseBase;
 
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public class NettyResponse implements Response {
+public final class NettyHttpResponse extends HttpResponseBase {
 
     private final FullHttpResponse response;
 
-    public NettyResponse(FullHttpResponse response) {
+    public NettyHttpResponse(FullHttpResponse response) {
         this.response = response;
     }
 
@@ -41,11 +41,6 @@ public class NettyResponse implements Response {
     @Override
     public ByteBuf body() {
         return this.response.content();
-    }
-
-    @Override
-    public String content() {
-        return null;
     }
 
     public FullHttpResponse getTargetResponse() {
