@@ -11,7 +11,5 @@ public interface ServerConnector extends Lifecycle, Contained {
 
     void setURIEncoding(String encoding);
 
-    Mapper getMapper();
-
     InetSocketAddress localAddress();
 }

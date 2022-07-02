@@ -35,19 +35,6 @@ public class FixedHikariPool<T extends AutoCloseable> extends AsyncPoolBase<T> {
 
     @Override
     public CompletableFuture<Void> closeAsync() {
-        if (!isActive()) {
-            return this.closeFuture;
-        }
-        this.state = ST_CLOSING;
-        CompletableFuture<Void> f = clearAsync();
-        this.state = ST_CLOSED;
-        f.whenComplete((v, t) -> {
-            if (t != null) {
-                this.closeFuture.completeExceptionally(t);
-            } else {
-                this.closeFuture.complete(v);
-            }
-        });
         return this.closeFuture;
     }
 

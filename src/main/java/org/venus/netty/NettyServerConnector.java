@@ -15,10 +15,12 @@ import io.netty.util.ResourceLeakDetector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.venus.Container;
-import org.venus.Mapper;
 import org.venus.ServerConnector;
 import org.venus.config.ServerConfig;
-import org.venus.core.*;
+import org.venus.core.LifecycleBase;
+import org.venus.core.StandardHostStream;
+import org.venus.core.StandardInStream;
+import org.venus.core.StandardOutStream;
 
 import java.net.InetSocketAddress;
 import java.nio.charset.Charset;
@@ -28,9 +30,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class NettyServerConnector extends LifecycleBase implements ServerConnector {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(NettyServerConnector.class);
-    private final Mapper mapper;
+
     private final NettyConnectionManager manager;
-    private ServerConfig config = new ServerConfig();
+    private final ServerConfig config;
     private ChannelFuture future;
     private EventLoopGroup acceptor;
     private EventLoopGroup selector;
@@ -39,9 +41,9 @@ public class NettyServerConnector extends LifecycleBase implements ServerConnect
     private Container container;
     private Charset uriCharset;
 
-    public NettyServerConnector() {
-        this.mapper = new StandardMapper();
-        this.manager = new NettyConnectionManager(config.getNetMaxConnections());
+    public NettyServerConnector(ServerConfig config) {
+        this.config = config;
+        this.manager = new NettyConnectionManager(this.config.getNetMaxConnections());
     }
 
     @Override
@@ -70,18 +72,13 @@ public class NettyServerConnector extends LifecycleBase implements ServerConnect
     }
 
     @Override
-    public Mapper getMapper() {
-        return this.mapper;
-    }
-
-    @Override
     public InetSocketAddress localAddress() {
         return (InetSocketAddress) this.future.channel().localAddress();
     }
 
     @Override
     public void start() throws Exception {
-        ResourceLeakDetector.setLevel(ResourceLeakDetector.Level.SIMPLE);
+        ResourceLeakDetector.setLevel(ResourceLeakDetector.Level.ADVANCED);
         NettyAdapter adapter = new NettyAdapter(this);
 
         StandardInStream inStream = new StandardInStream();

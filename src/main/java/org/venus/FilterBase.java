@@ -66,16 +66,13 @@ public abstract sealed class FilterBase<M> implements Filter<M> permits FilterIn
     }
 
     @Override
-    public CompletableFuture<M> filterAsync(CompletableFuture<M> future) {
-        CompletableFuture<M> f = new CompletableFuture<>();
-        future.whenComplete((msg, err) -> {
-            if (err != null) {
-                f.completeExceptionally(err);
-            } else {
-                f.complete(filter(msg));
-            }
-        });
-        return f;
+    public M filter(M msg) {
+        return filterAsync(CompletableFuture.completedFuture(msg)).join();
+    }
+
+    @Override
+    public CompletableFuture<M> filterAsync(M msg) {
+        return filterAsync(CompletableFuture.completedFuture(msg));
     }
 
     @Override
@@ -90,5 +87,4 @@ public abstract sealed class FilterBase<M> implements Filter<M> permits FilterIn
         }
         return name + "(" + type + ")";
     }
-
 }

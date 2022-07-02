@@ -10,6 +10,8 @@ public sealed interface Filter<M> extends Comparable<Filter<M>> permits FilterBa
 
     M filter(M msg);
 
+    CompletableFuture<M> filterAsync(M msg);
+
     CompletableFuture<M> filterAsync(CompletableFuture<M> future);
 
     Filter<M> next();
