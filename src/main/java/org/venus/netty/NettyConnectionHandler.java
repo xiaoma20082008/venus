@@ -4,14 +4,17 @@ import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.codec.http.*;
+import org.venus.Connection;
+import org.venus.ConnectionManager;
+import org.venus.SessionContext;
 
 import java.nio.charset.StandardCharsets;
 
 public class NettyConnectionHandler extends ChannelInboundHandlerAdapter {
 
-    private final NettyConnectionManager manager;
+    private final ConnectionManager manager;
 
-    public NettyConnectionHandler(NettyConnectionManager manager) {
+    public NettyConnectionHandler(ConnectionManager manager) {
         this.manager = manager;
     }
 
@@ -22,24 +25,27 @@ public class NettyConnectionHandler extends ChannelInboundHandlerAdapter {
             return;
         }
         // connected
-        if (manager.onConnected(ctx)) {
+        if (this.manager.canAcquire()) {
+            NettyConnection connection = new NettyConnection(ctx.channel());
+            ctx.channel().attr(SessionContext.ATTR_CONNECTION_KEY).set(connection);
+            this.manager.onConnected(connection);
             super.channelActive(ctx);
         } else {
-            ctx.writeAndFlush(createErrorResponse());
-            ctx.channel().close();
+            ctx.writeAndFlush(createErrorResponse()).addListener(f -> ctx.channel().close());
         }
     }
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
         // disconnected
-        manager.onClosed(ctx);
+        Connection connection = ctx.channel().attr(SessionContext.ATTR_CONNECTION_KEY).getAndSet(null);
+        this.manager.onClosed(connection);
     }
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         // error
-        manager.onFailed(ctx, cause);
+        this.manager.onFailed(ctx, cause);
     }
 
     @Override

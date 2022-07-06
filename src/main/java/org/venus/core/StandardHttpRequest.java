@@ -3,8 +3,8 @@ package org.venus.core;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufUtil;
 import io.netty.buffer.Unpooled;
+import org.venus.Connection;
 import org.venus.HttpRequestBase;
-import org.venus.SessionContext;
 
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -23,12 +23,12 @@ public final class StandardHttpRequest extends HttpRequestBase {
     private final Map<String, String> headers;
     private final ByteBuf body;
 
-    private StandardHttpRequest(String m, String uri, String v, Map<String, String> headers, ByteBuf buf, SessionContext ctx) {
-        super(ctx);
+    private StandardHttpRequest(String m, String uri, String v, Map<String, String> h, ByteBuf buf, Connection c) {
+        super(c);
         this.method = m;
         this.uri = uri;
         this.version = v;
-        this.headers = headers;
+        this.headers = h;
         this.body = buf;
     }
 
@@ -83,7 +83,7 @@ public final class StandardHttpRequest extends HttpRequestBase {
         private String version = "HTTP/1.1";
         private Map<String, String> headers = new HashMap<>();
         private ByteBuf body;
-        private SessionContext context = new SessionContext();
+        private Connection connection;
 
         public HttpRequestBuilder method(String method) {
             this.method = method;
@@ -143,8 +143,8 @@ public final class StandardHttpRequest extends HttpRequestBase {
             return this;
         }
 
-        public HttpRequestBuilder context(SessionContext context) {
-            this.context = context;
+        public HttpRequestBuilder connection(Connection connection) {
+            this.connection = connection;
             return this;
         }
 
@@ -155,7 +155,7 @@ public final class StandardHttpRequest extends HttpRequestBase {
                     requireNonNull(version, "version is null"),
                     requireNonNull(headers, "headers is null"),
                     body,
-                    requireNonNull(context, "context is null")
+                    requireNonNull(connection, "connection is null")
             );
         }
     }

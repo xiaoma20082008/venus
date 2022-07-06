@@ -1,37 +1,14 @@
 package org.venus.nio;
 
-import org.venus.Container;
-import org.venus.ServerConnector;
-import org.venus.core.LifecycleBase;
+import org.venus.ServerConnectorBase;
+import org.venus.config.ServerConfig;
 
 import java.net.InetSocketAddress;
-import java.nio.charset.Charset;
 
-public class NioServerConnector extends LifecycleBase implements ServerConnector {
+public class NioServerConnector extends ServerConnectorBase {
 
-    @Override
-    public Container getContainer() {
-        return null;
-    }
-
-    @Override
-    public void setContainer(Container container) {
-
-    }
-
-    @Override
-    public Charset getURICharset() {
-        return null;
-    }
-
-    @Override
-    public String getURIEncoding() {
-        return null;
-    }
-
-    @Override
-    public void setURIEncoding(String encoding) {
-
+    public NioServerConnector(ServerConfig config) {
+        super(config);
     }
 
     @Override

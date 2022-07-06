@@ -14,61 +14,31 @@ import io.netty.handler.codec.http.HttpServerCodec;
 import io.netty.util.ResourceLeakDetector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.venus.Container;
-import org.venus.ServerConnector;
+import org.venus.ConnectionManager;
+import org.venus.ServerConnectorBase;
 import org.venus.config.ServerConfig;
-import org.venus.core.LifecycleBase;
 import org.venus.core.StandardHostStream;
 import org.venus.core.StandardInStream;
 import org.venus.core.StandardOutStream;
 
 import java.net.InetSocketAddress;
-import java.nio.charset.Charset;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class NettyServerConnector extends LifecycleBase implements ServerConnector {
+public class NettyServerConnector extends ServerConnectorBase {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(NettyServerConnector.class);
 
-    private final NettyConnectionManager manager;
-    private final ServerConfig config;
+    private final ConnectionManager manager;
     private ChannelFuture future;
     private EventLoopGroup acceptor;
     private EventLoopGroup selector;
     private EventLoopGroup codec;
     private EventLoopGroup worker;
-    private Container container;
-    private Charset uriCharset;
 
     public NettyServerConnector(ServerConfig config) {
-        this.config = config;
-        this.manager = new NettyConnectionManager(this.config.getNetMaxConnections());
-    }
-
-    @Override
-    public Container getContainer() {
-        return this.container;
-    }
-
-    @Override
-    public void setContainer(Container container) {
-        this.container = container;
-    }
-
-    @Override
-    public Charset getURICharset() {
-        return this.uriCharset;
-    }
-
-    @Override
-    public String getURIEncoding() {
-        return this.uriCharset.name();
-    }
-
-    @Override
-    public void setURIEncoding(String encoding) {
-        this.uriCharset = Charset.forName(encoding);
+        super(config);
+        this.manager = new ConnectionManager(this.config.getNetMaxConnections());
     }
 
     @Override
@@ -87,7 +57,7 @@ public class NettyServerConnector extends LifecycleBase implements ServerConnect
         hostStream.setNext(outStream);
         inStream.setNext(hostStream);
 
-        this.container = inStream;
+        setContainer(inStream);
         this.acceptor = new NioEventLoopGroup(1, new ThreadFactory() {
             private final AtomicInteger idx = new AtomicInteger(1);
 
@@ -149,7 +119,7 @@ public class NettyServerConnector extends LifecycleBase implements ServerConnect
                     }
                 });
         this.future = server.bind().sync();
-        this.container.start();
+        getContainer().start();
         this.future.await();
         LOGGER.info("## connector started...");
     }

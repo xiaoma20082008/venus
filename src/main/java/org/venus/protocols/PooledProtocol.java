@@ -1,14 +1,13 @@
 package org.venus.protocols;
 
-import org.venus.ClientConnector;
-import org.venus.Protocol;
-import org.venus.Request;
-import org.venus.Response;
+import org.venus.*;
 import org.venus.config.FixedPoolConfig;
 import org.venus.utils.AsyncObjectFactory;
 import org.venus.utils.AsyncPool;
 import org.venus.utils.FixedCommonsPool;
 
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 
@@ -37,32 +36,6 @@ public class PooledProtocol extends ProtocolBase {
         return client;
     }
 
-    private class ClientConnectorProxy extends ClientConnectorBase {
-
-        private volatile ClientConnector client;
-
-        public ClientConnectorProxy(ClientConnector client) {
-            this.client = client;
-        }
-
-        @Override
-        public CompletableFuture<Response> invokeAsync(Request request) {
-            return this.client.invokeAsync(request);
-        }
-
-        @Override
-        public void start() throws Exception {
-            this.client.start();
-        }
-
-        @Override
-        public void close() throws Exception {
-            PooledProtocol.this.pool.release(this.client);
-            this.client = null;
-        }
-
-    }
-
     private record ClientConnectorFactory(Protocol protocol) implements AsyncObjectFactory<ClientConnector> {
 
         @Override
@@ -81,6 +54,37 @@ public class PooledProtocol extends ProtocolBase {
         @Override
         public CompletableFuture<Boolean> validate(ClientConnector client) {
             return CompletableFuture.completedFuture(protocol.check(client));
+        }
+
+    }
+
+    private class ClientConnectorProxy extends ClientConnectorBase implements InvocationHandler {
+
+        private volatile ClientConnector client;
+
+        public ClientConnectorProxy(ClientConnector client) {
+            this.client = client;
+        }
+
+        @Override
+        public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+            return method.invoke(this.client, args);
+        }
+
+        @Override
+        public CompletableFuture<Response> invokeAsync(Request request) {
+            return this.client.invokeAsync(request);
+        }
+
+        @Override
+        public void start() throws Exception {
+            this.client.start();
+        }
+
+        @Override
+        public void close() throws Exception {
+            PooledProtocol.this.pool.release(this.client);
+            this.client = null;
         }
 
     }

@@ -21,6 +21,13 @@ public class StandardInStreamValve extends ValveBase {
         this.inbound = buildInboundFilter();
     }
 
+    private static FilterInbound buildInboundFilter() {
+        return (FilterInbound) new AuthFilter()
+                .next(new SignFilter())
+                .next(new RouteFilter())
+                .next(new MockReqFilter());
+    }
+
     @Override
     public CompletableFuture<Response> invoke(Request req, CompletableFuture<Response> ignore) {
         req = this.inbound.filter(req);
@@ -29,12 +36,5 @@ public class StandardInStreamValve extends ValveBase {
                 .getPipeline()
                 .getFirst()
                 .invoke(req);
-    }
-
-    private static FilterInbound buildInboundFilter() {
-        return (FilterInbound) new AuthFilter()
-                .next(new SignFilter())
-                .next(new RouteFilter())
-                .next(new MockReqFilter());
     }
 }

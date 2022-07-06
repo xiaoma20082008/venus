@@ -1,8 +1,5 @@
-package org.venus.protocols;
+package org.venus;
 
-import org.venus.ClientConnector;
-import org.venus.Request;
-import org.venus.Response;
 import org.venus.core.LifecycleBase;
 
 public abstract class ClientConnectorBase extends LifecycleBase implements ClientConnector {

@@ -10,6 +10,7 @@ import io.netty.util.ReferenceCountUtil;
 import io.netty.util.internal.PlatformDependent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.venus.Connection;
 import org.venus.SessionContext;
 
 public class NettyRequestReceiver extends ChannelInboundHandlerAdapter {
@@ -43,9 +44,9 @@ public class NettyRequestReceiver extends ChannelInboundHandlerAdapter {
     private void doService(ChannelHandlerContext ctx, FullHttpRequest request) {
         long start = System.currentTimeMillis();
         try {
-            SessionContext sc = ctx.channel().attr(SessionContext.ATTR_SESSION_KEY).get();
+            Connection connection = ctx.channel().attr(SessionContext.ATTR_CONNECTION_KEY).get();
 
-            this.adapter.service(request, sc)
+            this.adapter.service(request, connection)
                     .whenComplete(
                             (response, err) -> {
                                 if (err != null) { // TODO: 2022/7/1 release request,response

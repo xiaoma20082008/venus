@@ -8,14 +8,16 @@ import java.util.Objects;
 
 public abstract class HttpRequestBase implements Request {
 
-    protected final SessionContext context;
+    protected transient final SessionContext context;
+    protected transient final Connection connection;
 
     private transient String path;// for cache
     private transient String content;// for cache
     private transient Map<String, List<String>> parameters;// for cache
 
-    protected HttpRequestBase(SessionContext context) {
-        this.context = Objects.requireNonNull(context, "context is null");
+    protected HttpRequestBase(Connection connection) {
+        this.connection = Objects.requireNonNull(connection, "connection is null");
+        this.context = this.connection.context();
     }
 
     @Override
@@ -61,6 +63,11 @@ public abstract class HttpRequestBase implements Request {
     @Override
     public final SessionContext context() {
         return this.context;
+    }
+
+    @Override
+    public final Connection connection() {
+        return this.connection;
     }
 
     @Override

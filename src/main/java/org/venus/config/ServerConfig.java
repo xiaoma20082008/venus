@@ -9,7 +9,7 @@ public class ServerConfig {
     private int threadCodecNums = 3;
     private int threadWorkerNums = 50;
 
-    private int netMaxConnections = 1;
+    private int netMaxConnections = 10000;
     private int netSoBacklog = 1000;
     private boolean netSoReuseaddr = true;
     private boolean netKeepalive = true;

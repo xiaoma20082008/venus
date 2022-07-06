@@ -7,6 +7,7 @@ import org.venus.ClientConnector;
 import org.venus.Response;
 import org.venus.SessionContext;
 import org.venus.core.StandardHttpRequest;
+import org.venus.nio.NioConnection;
 import org.venus.protocols.http.HttpProtocol;
 
 public class ProtocolChooserTest {
@@ -16,13 +17,13 @@ public class ProtocolChooserTest {
     @Test
     public void test_choose() {
         ProtocolChooser chooser = new ProtocolChooser();
-        SessionContext context = new SessionContext();
-        context.put(SessionContext.PROTOCOL_KEY, HttpProtocol.NAME);
+        NioConnection connection = new NioConnection(null);
+        connection.context().put(SessionContext.PROTOCOL_KEY, HttpProtocol.NAME);
         StandardHttpRequest request = StandardHttpRequest.builder()
                 .method("GET")
                 .uri("/index")
                 .version("HTTP/1.1")
-                .context(context)
+                .connection(connection)
                 .build();
         try (ClientConnector client = chooser.choose(request).create();) {
             Response response = client.invoke(request);

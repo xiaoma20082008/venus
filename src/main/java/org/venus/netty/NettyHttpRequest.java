@@ -2,21 +2,25 @@ package org.venus.netty;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.http.FullHttpRequest;
+import org.venus.Connection;
 import org.venus.HttpRequestBase;
-import org.venus.SessionContext;
 
 import java.util.Map;
 import java.util.stream.Collectors;
 
 public final class NettyHttpRequest extends HttpRequestBase {
 
-    private final FullHttpRequest request;
+    private transient final FullHttpRequest request;
 
     private transient Map<String, String> headers;
 
-    public NettyHttpRequest(FullHttpRequest request, SessionContext context) {
-        super(context);
+    public NettyHttpRequest(FullHttpRequest request, Connection connection) {
+        super(connection);
         this.request = request;
+    }
+
+    public static NettyRequestBuilder builder() {
+        return new NettyRequestBuilder();
     }
 
     @Override
@@ -52,10 +56,6 @@ public final class NettyHttpRequest extends HttpRequestBase {
 
     public FullHttpRequest getSourceRequest() {
         return request;
-    }
-
-    public static NettyRequestBuilder builder() {
-        return new NettyRequestBuilder();
     }
 
     public static class NettyRequestBuilder {

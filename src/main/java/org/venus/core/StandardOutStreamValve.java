@@ -19,6 +19,10 @@ public class StandardOutStreamValve extends ValveBase {
         this.out = buildOutboundFilter();
     }
 
+    private static FilterOutbound buildOutboundFilter() {
+        return (FilterOutbound) new GZipFilter().next(new MockRespFilter());
+    }
+
     @Override
     public CompletableFuture<Response> invoke(Request req, CompletableFuture<Response> resp) {
         CompletableFuture<Response> res = new CompletableFuture<>();
@@ -29,10 +33,6 @@ public class StandardOutStreamValve extends ValveBase {
                 res.complete(this.out.filter(response));
             }
         }));
-    }
-
-    private static FilterOutbound buildOutboundFilter() {
-        return (FilterOutbound) new GZipFilter().next(new MockRespFilter());
     }
 
 }

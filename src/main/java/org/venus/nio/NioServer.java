@@ -7,9 +7,11 @@ import java.net.SocketAddress;
 
 public class NioServer extends LifecycleBase implements Server {
 
+    private NioServerConnector connector;
+
     @Override
     public SocketAddress getLocalAddress() {
-        return null;
+        return this.connector.localAddress();
     }
 
 }

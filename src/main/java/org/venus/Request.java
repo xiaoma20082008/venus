@@ -47,6 +47,8 @@ public interface Request {
 
     SessionContext context();
 
+    Connection connection();
+
     void putAttr(String key, Object attr);
 
     Object getAttr(String key);
