@@ -8,9 +8,17 @@ public interface Valve {
 
     void setNext(Valve next);
 
-    default CompletableFuture<Response> invoke(Request request) {
-        return invoke(request, new CompletableFuture<>());
+    default Response invoke(Request request) {
+        return invokeAsync(request).join();
     }
 
-    CompletableFuture<Response> invoke(Request req, CompletableFuture<Response> resp);
+    default Response invoke(Request request, Response response) {
+        return invokeAsync(request, CompletableFuture.completedFuture(response)).join();
+    }
+
+    default CompletableFuture<Response> invokeAsync(Request request) {
+        return invokeAsync(request, new CompletableFuture<>());
+    }
+
+    CompletableFuture<Response> invokeAsync(Request req, CompletableFuture<Response> resp);
 }

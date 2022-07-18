@@ -11,8 +11,8 @@ public class AccessLogValve extends ValveBase {
     private AccessLog log;
 
     @Override
-    public CompletableFuture<Response> invoke(Request req, CompletableFuture<Response> resp) {
-        return getNext().invoke(req, resp);
+    public CompletableFuture<Response> invokeAsync(Request req, CompletableFuture<Response> resp) {
+        return getNext().invokeAsync(req, resp);
     }
 
 }

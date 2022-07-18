@@ -1,6 +1,9 @@
 package org.venus.netty;
 
+import io.netty.handler.codec.http.FullHttpResponse;
 import org.venus.Adapter;
+import org.venus.Request;
+import org.venus.Response;
 import org.venus.ServerConnector;
 
 import java.util.concurrent.CompletableFuture;
@@ -19,33 +22,15 @@ public class NettyAdapter implements
     }
 
     @Override
-    public CompletableFuture<io.netty.handler.codec.http.FullHttpResponse> service(io.netty.handler.codec.http.FullHttpRequest request, Object ext) {
+    public CompletableFuture<io.netty.handler.codec.http.FullHttpResponse> serviceAsync(io.netty.handler.codec.http.FullHttpRequest request, Object ext) {
         CompletableFuture<io.netty.handler.codec.http.FullHttpResponse> res = new CompletableFuture<>();
-        this.fa.service(request, ext)
-                .whenComplete((req, reqError) -> {
-                    if (reqError != null) {
-                        res.completeExceptionally(reqError);
-                    } else {
-                        connector.getContainer()
-                                .getPipeline()
-                                .getFirst()
-                                .invoke(req)
-                                .whenComplete((resp, err) -> {
-                                    if (err != null) {
-                                        res.completeExceptionally(err);
-                                    } else {
-                                        this.ba.service(resp, ext)
-                                                .whenComplete(((response, exception) -> {
-                                                    if (exception != null) {
-                                                        res.completeExceptionally(exception);
-                                                    } else {
-                                                        res.complete(response);
-                                                    }
-                                                }));
-                                    }
-                                });
-                    }
-                });
+        Request req = this.fa.service(request, ext);
+        Response resp = this.connector.getContainer()
+                .getPipeline()
+                .getFirst()
+                .invoke(req);
+        FullHttpResponse response = this.ba.service(resp, ext);
+        res.complete(response);
         return res;
     }
 

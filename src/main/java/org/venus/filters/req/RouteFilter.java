@@ -19,7 +19,7 @@ public final class RouteFilter extends FilterInbound {
 
     private CompletableFuture<Request> mockRouteRequest(CompletableFuture<Request> future) {
         try {
-            Thread.sleep(5);
+            Thread.sleep(1);
         } catch (InterruptedException ignore) {
         }
         CompletableFuture<Request> res = new CompletableFuture<>();

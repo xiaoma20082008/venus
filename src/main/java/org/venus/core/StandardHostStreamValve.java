@@ -16,14 +16,14 @@ public class StandardHostStreamValve extends ValveBase {
     }
 
     @Override
-    public CompletableFuture<Response> invoke(Request req, CompletableFuture<Response> ignore) {
+    public CompletableFuture<Response> invokeAsync(Request req, CompletableFuture<Response> ignore) {
         CompletableFuture<Response> res = new CompletableFuture<>();
         try (ClientConnector client = chooser.choose(req).create()) {
             getContainer()
                     .getNext() // out
                     .getPipeline()
                     .getFirst()
-                    .invoke(req, client.invokeAsync(req))
+                    .invokeAsync(req, client.invokeAsync(req))
                     .whenComplete((r, e) -> {
                         if (e != null) {
                             res.completeExceptionally(e);

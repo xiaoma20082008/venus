@@ -12,6 +12,7 @@ import org.venus.Response;
 import org.venus.netty.NettyHttpResponse;
 
 import java.util.Arrays;
+import java.util.Random;
 import java.util.concurrent.CompletableFuture;
 
 public class HttpClientConnector extends ClientConnectorBase {
@@ -27,10 +28,10 @@ public class HttpClientConnector extends ClientConnectorBase {
         return res;
     }
 
-    private Response mockResponse(Request request) {
+    public static NettyHttpResponse mockResponse(Request request) {
         // 模拟后端请求
         try {
-            Thread.sleep(25);
+            Thread.sleep(2);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
@@ -48,10 +49,10 @@ public class HttpClientConnector extends ClientConnectorBase {
         return new NettyHttpResponse(response);
     }
 
-    private byte[] gen1_5kBytes() {
+    private static byte[] gen1_5kBytes() {
         int len = 1536;
         byte[] bytes = new byte[len];
-        Arrays.fill(bytes, (byte) 'a');
+        Arrays.fill(bytes, (byte) new Random().nextInt('a', 'z'));
         return bytes;
     }
 }

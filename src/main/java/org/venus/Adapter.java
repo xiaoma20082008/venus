@@ -4,5 +4,9 @@ import java.util.concurrent.CompletableFuture;
 
 public interface Adapter<T, R> {
 
-    CompletableFuture<R> service(T request, Object ext);
+    default R service(T request, Object ext) {
+        return serviceAsync(request, ext).join();
+    }
+
+    CompletableFuture<R> serviceAsync(T request, Object ext);
 }

@@ -29,12 +29,12 @@ public class StandardInStreamValve extends ValveBase {
     }
 
     @Override
-    public CompletableFuture<Response> invoke(Request req, CompletableFuture<Response> ignore) {
+    public CompletableFuture<Response> invokeAsync(Request req, CompletableFuture<Response> ignore) {
         req = this.inbound.filter(req);
         return getContainer()
                 .getNext() // == Host
                 .getPipeline()
                 .getFirst()
-                .invoke(req);
+                .invokeAsync(req);
     }
 }

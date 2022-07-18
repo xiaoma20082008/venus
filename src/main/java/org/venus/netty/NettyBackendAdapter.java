@@ -9,7 +9,7 @@ import java.util.concurrent.CompletableFuture;
 public class NettyBackendAdapter implements Adapter<Response, io.netty.handler.codec.http.FullHttpResponse> {
 
     @Override
-    public CompletableFuture<io.netty.handler.codec.http.FullHttpResponse> service(Response resp, Object ext) {
+    public CompletableFuture<io.netty.handler.codec.http.FullHttpResponse> serviceAsync(Response resp, Object ext) {
         FullHttpResponse response;
         if (resp instanceof NettyHttpResponse nettyResponse) {
             response = nettyResponse.getTargetResponse();

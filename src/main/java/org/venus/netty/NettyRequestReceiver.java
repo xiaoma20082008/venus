@@ -26,16 +26,9 @@ public class NettyRequestReceiver extends ChannelInboundHandlerAdapter {
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         if (msg == null || msg == Unpooled.EMPTY_BUFFER || msg instanceof EmptyByteBuf) {
-            return;
+            ctx.close();
         } else if (msg instanceof FullHttpRequest req) {
-            // 请求行+请求头
-            if (req.content().readableBytes() > 0) {
-                ctx.channel()
-                        .eventLoop()
-                        .execute(() -> doService(ctx, req));
-            } else {
-                ReferenceCountUtil.release(msg);
-            }
+            doService(ctx, req);
         } else {
             ReferenceCountUtil.release(msg);
         }
@@ -45,49 +38,44 @@ public class NettyRequestReceiver extends ChannelInboundHandlerAdapter {
         long start = System.currentTimeMillis();
         try {
             Connection connection = ctx.channel().attr(SessionContext.ATTR_CONNECTION_KEY).get();
-
-            this.adapter.service(request, connection)
-                    .whenComplete(
-                            (response, err) -> {
-                                if (err != null) { // TODO: 2022/7/1 release request,response
-                                    ctx.fireExceptionCaught(err);
-                                    ctx.close();
-                                    return;
-                                }
-                                long end = System.currentTimeMillis();
-                                ctx.writeAndFlush(response)
-                                        .addListener(future ->
-                                                onResponseComplete(ctx, request, response, future.cause(), start, end));
-                            });
+            FullHttpResponse response = this.adapter.service(request, connection);
+            long end = System.currentTimeMillis();
+            ctx.writeAndFlush(response).addListener(future -> onResponseComplete(ctx, request, response, future.cause(), start, end));
         } catch (Throwable e) {
-            ctx.fireExceptionCaught(e);
+            FullHttpResponse response = NettyHttpResponse.error(e).getTargetResponse();
+            long end = System.currentTimeMillis();
+            ctx.writeAndFlush(response).addListener(future -> onResponseComplete(ctx, request, response, e, start, end));
         }
     }
 
     private void onResponseComplete(ChannelHandlerContext ctx,
                                     FullHttpRequest request, FullHttpResponse response,
                                     Throwable error, long start, long end) {
+        int rc = request.refCnt();
+        int sc = response.refCnt();
+        assert rc == 1;
+        assert sc == 1;
+
         long u = PlatformDependent.usedDirectMemory();
         try {
             if (error != null) {
                 ctx.fireExceptionCaught(error);
             }
         } finally {
-            int rc = request.refCnt();
-            int sc = response.refCnt();
+
             ReferenceCountUtil.release(request);    // ref--
             ReferenceCountUtil.release(response);   // ref--
+        }
 
-            long n = PlatformDependent.usedDirectMemory();
-            long m = PlatformDependent.maxDirectMemory();
+        long n = PlatformDependent.usedDirectMemory();
+        long m = PlatformDependent.maxDirectMemory();
 
-            if (error == null) {
-                LOGGER.info("## write response success. total cost {}ms, process cost {}ms, write response cost {}ms. Direct memory: use/now/max = {}/{}/{} bytes. rc={},sc={}",
-                        System.currentTimeMillis() - start, (end - start), (System.currentTimeMillis() - end), u, n, m, rc, sc);
-            } else {
-                LOGGER.info("## write response failed. total cost {}ms, process cost {}ms, write response cost {}ms. Direct memory: use/now/max = {}/{}/{} bytes. rc={},sc={} caused by:{}",
-                        System.currentTimeMillis() - start, (end - start), (System.currentTimeMillis() - end), u, n, m, rc, sc, error);
-            }
+        if (error == null) {
+            LOGGER.info("##Total {}ms, process {}ms, write {}ms. Direct memory: use/now/max = {}/{}/{} bytes. rc={},sc={}",
+                    System.currentTimeMillis() - start, (end - start), (System.currentTimeMillis() - end), u, n, m, rc, sc);
+        } else {
+            LOGGER.info("##Total {}ms, process {}ms, write {}ms. Direct memory: use/now/max = {}/{}/{} bytes. rc={},sc={} caused by:{}",
+                    System.currentTimeMillis() - start, (end - start), (System.currentTimeMillis() - end), u, n, m, rc, sc, error);
         }
     }
 

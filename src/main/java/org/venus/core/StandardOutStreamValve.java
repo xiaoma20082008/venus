@@ -24,15 +24,22 @@ public class StandardOutStreamValve extends ValveBase {
     }
 
     @Override
-    public CompletableFuture<Response> invoke(Request req, CompletableFuture<Response> resp) {
+    public CompletableFuture<Response> invokeAsync(Request req, CompletableFuture<Response> resp) {
         CompletableFuture<Response> res = new CompletableFuture<>();
-        return resp.whenComplete(((response, exception) -> {
+        resp.whenComplete(((response, exception) -> {
             if (exception != null) {
                 res.completeExceptionally(exception);
             } else {
-                res.complete(this.out.filter(response));
+                this.out.filterAsync(response).whenComplete((r, e) -> {
+                    if (e != null) {
+                        res.completeExceptionally(e);
+                    } else {
+                        res.complete(r);
+                    }
+                });
             }
         }));
+        return res;
     }
 
 }

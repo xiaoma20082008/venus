@@ -8,7 +8,7 @@ import java.util.concurrent.CompletableFuture;
 public class SemaphoreValve extends ValveBase {
 
     @Override
-    public CompletableFuture<Response> invoke(Request req, CompletableFuture<Response> resp) {
+    public CompletableFuture<Response> invokeAsync(Request req, CompletableFuture<Response> resp) {
         return resp;
     }
 

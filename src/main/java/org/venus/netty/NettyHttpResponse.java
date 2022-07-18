@@ -1,9 +1,11 @@
 package org.venus.netty;
 
 import io.netty.buffer.ByteBuf;
-import io.netty.handler.codec.http.FullHttpResponse;
+import io.netty.buffer.PooledByteBufAllocator;
+import io.netty.handler.codec.http.*;
 import org.venus.HttpResponseBase;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -47,4 +49,18 @@ public final class NettyHttpResponse extends HttpResponseBase {
         return this.response;
     }
 
+    public static NettyHttpResponse error(Throwable t) {
+        var body = """
+                {
+                    "code":500,
+                    "error":"%s"
+                }
+                """;
+        ByteBuf buf = PooledByteBufAllocator.DEFAULT.directBuffer();
+        buf.writeCharSequence(String.format(body, t.getMessage()), StandardCharsets.UTF_8);
+        DefaultFullHttpResponse resp = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK, buf);
+        resp.headers().set(HttpHeaderNames.CONTENT_LENGTH, resp.content().readableBytes());
+        resp.headers().set(HttpHeaderNames.CONTENT_TYPE, "application/json;charset=utf-8");
+        return new NettyHttpResponse(resp);
+    }
 }

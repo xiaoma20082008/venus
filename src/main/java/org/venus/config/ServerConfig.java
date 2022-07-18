@@ -5,7 +5,7 @@ public class ServerConfig {
     private int port = 4321;
 
     private int threadAcceptorNums = 1;
-    private int threadSelectorNums = 2 * Runtime.getRuntime().availableProcessors();
+    private int threadSelectorNums = Runtime.getRuntime().availableProcessors() + 1;
     private int threadCodecNums = 3;
     private int threadWorkerNums = 50;
 
